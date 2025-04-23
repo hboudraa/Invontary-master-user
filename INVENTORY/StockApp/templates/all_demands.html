@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<br>
+<h2>📋 Liste de toutes les demandes</h2>
+<br>
+<table class="table table-bordered table-striped text-light">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Utilisateur</th>
+      <th>Date</th>
+      <th>Produit</th>
+      <th>Quantité</th>
+      <th>Statut</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for demand in page_obj %}
+      <tr>
+        <td>{{ demand.id }}</td>
+        <td>{{ demand.user }}</td>
+        <td>{{ demand.date }}</td>
+        <td>{{ demand.name_demand.name }}</td>
+        <td>{{ demand.quantity }}</td>
+        <td>
+          {% if demand.status == 'pending' %}
+            <span class="badge bg-warning text-dark">En attente</span>
+          {% elif demand.status == 'accepted' %}
+            <span class="badge bg-success">Acceptée</span>
+          {% elif demand.status == 'rejected' %}
+            <span class="badge bg-danger">Rejetée</span>
+          {% else %}
+            <span class="badge bg-secondary">Inconnue</span>
+          {% endif %}
+        </td>
+        <td class="text-center">
+          {% if demand.status == 'pending' %}
+            <button class="btn btn-outline-success btn-sm" onclick="confirmStatus('{{ demand.id }}', 'accepted')">✅</button>
+            |
+            <button class="btn btn-outline-danger btn-sm" onclick="confirmStatus('{{ demand.id }}', 'rejected')">❌</button>
+          {% else %}
+          déja traité
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Modal Confirmation -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title text-light" id="statusModalLabel">Confirmation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body text-light">
+        Êtes-vous sûr de vouloir <span id="modalAction"></span> cette demande ?
+      </div>
+      <div class="modal-footer">
+        <a id="modalConfirmBtn" href="#" class="btn btn-primary">Confirmer</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pagination -->
+<nav aria-label="Page navigation example">
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Précédent</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <a class="page-link" href="#">Précédent</a>
+      </li>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <li class="page-item active">
+          <a class="page-link" href="#">{{ num }}</a>
+        </li>
+      {% else %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Suivant</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <a class="page-link" href="#">Suivant</a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function confirmStatus(demandId, status) {
+    const modal = new bootstrap.Modal(document.getElementById('statusModal'));
+    const actionLabel = status === 'accepted' ? 'accepter' : 'rejeter';
+    document.getElementById('modalAction').innerText = actionLabel;
+    document.getElementById('modalConfirmBtn').href = `/demand/${demandId}/${status}/`;
+    console.log("Demand ID:", demandId, "Status:", status);
+    modal.show();
+  }
+</script>
+{% endblock %}

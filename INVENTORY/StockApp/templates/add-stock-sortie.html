@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Ajouter votre Fiche de Stock Sortie ici SVP</h1>
+            <p class="lead fw-normal text-white-50 mb-0">Remplire le formulaire</p>
+        </div>
+    </div>
+</header>
+
+<form action="" method="POST">
+    {% csrf_token %}
+        <div class="mb-3">
+        {{ form_sortie.product.label_tag }}  <!-- Product Name -->
+        {{ form_sortie.product }}
+    </div>
+    <div class="mb-3">
+
+        {{form_sortie.number.label_tag }}  <!-- number -->
+        {{ form_sortie.number }}
+    </div>
+    <div class="mb-3">
+        {{ form_sortie.destination.label_tag }}  <!-- Category Dropdown -->
+        {{ form_sortie.destination }}
+    </div>
+    <div class="mb-3">
+        {{ form_sortie.quantity.label_tag }}  <!-- Quantity -->
+        {{ form_sortie.quantity }}
+    </div>
+    <div class="mb-3">
+        {{ form_sortie.observation.label_tag }}  <!-- observation -->
+        {{ form_sortie.media }}
+        {{ form_sortie.observation }}
+    </div>
+
+    <button type="submit" value="" class="btn btn-primary">Add Product</button>
+</form>
+{% endblock %}

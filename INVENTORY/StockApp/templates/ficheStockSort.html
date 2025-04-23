@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Fiche de Stock -Sortie-</h1>
+<h1>{{ item.name }}</h1>
+<p>Stock: {{ item.description | safe }} </p>
+
+<table class="table table-striped text-light">
+  <thead>
+    <tr>
+      <th scope="col">N°</th>
+      <th scope="col">Date</th>
+      <th scope="col">Produit</th>
+      <th scope="col">Destination</th>
+      <th scope="col" class="text-danger">Quantity</th>
+      <th scope="col">Note</th>
+    </tr>
+  </thead>
+  {% for fiche_sortie in page_obj %}
+    {% if fiche_sortie.name_fiche == item %}
+        <tbody class="table-group-divider">
+          <tr>
+              <td>{{ fiche_sortie.number }}</td>
+              <td>{{ fiche_sortie.date }}</td>
+              <td>{{ fiche_sortie.name_fiche.name | safe }}</td>
+              <td>{{ fiche_sortie.destination }}</td>
+              <td class="text-light">{{ fiche_sortie.quantity }}</td>
+              <td>{{ fiche_sortie.observation | truncatewords:3 | safe }}</td>
+            </tr>
+        </tbody>
+    {% endif %}
+  {% endfor %}
+</table>
+<a href="{% url 'product:export_products_to_excel' %}" class="btn btn-primary">Export to Excel</a>
+{% endblock %}

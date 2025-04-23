@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>📝 Faire une demande pour : {{ demand_id.name }}</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form_demand.as_p }}
+  <button type="submit" class="btn btn-primary">Envoyer</button>
+</form>
+
+<hr>
+
+<table class="table table-bordered text-light mt-4">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Utilisateur</th>
+      <th>Date</th>
+      <th>Produit</th>
+      <th>Quantité</th>
+      <th>Statut</th>
+      {% if request.user.is_superuser %}
+        <th>Actions</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for list_dem in page_obj %}
+      <tr>
+        <td>{{ list_dem.id }}</td>
+        <td>{{ list_dem.user }}</td>
+        <td>{{ list_dem.date }}</td>
+        <td>{{ list_dem.name_demand.name }}</td>
+        <td>{{ list_dem.quantity }}</td>
+        <td>
+          {% if list_dem.status == 'accepted' %}
+            <span class="badge bg-success">Accepté</span>
+          {% elif list_dem.status == 'rejected' %}
+            <span class="badge bg-danger">Rejeté</span>
+          {% else %}
+            <span class="badge bg-warning text-dark">En attente</span>
+          {% endif %}
+        </td>
+        {% if request.user.is_superuser %}
+          <td>
+            {% if list_dem.status == 'pending' %}
+              <button class="btn btn-success btn-sm" onclick="openModal({{ list_dem.id }}, 'accepted')">✅ Accepter</button>
+              <button class="btn btn-danger btn-sm" onclick="openModal({{ list_dem.id }}, 'rejected')">❌ Rejeter</button>
+            {% else %}
+              <em>-</em>
+            {% endif %}
+          </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- ✅ نافذة التأكيد -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmModalLabel">Confirmation</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir <span id="actionTypeText" class="fw-bold"></span> cette demande ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <a id="confirmBtn" class="btn btn-primary">Confirmer</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Pagination -->
+<nav>
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
+    {% endif %}
+    <li class="page-item active"><a class="page-link">{{ page_obj.number }}</a></li>
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
+    {% endif %}
+  </ul>
+</nav>
+
+
+
+
+
+<!-- ✅ Script Modal -->
+<script>
+  function openModal(demandId, actionType) {
+    const actionText = actionType === 'accepted' ? 'accepter' : 'rejeter';
+    const actionUrl = `/demand/${demandId}/${actionType}/`;
+    document.getElementById('actionTypeText').textContent = actionText;
+    document.getElementById('confirmBtn').href = actionUrl;
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    modal.show();
+  }
+</script>
+
+{% endblock %}
