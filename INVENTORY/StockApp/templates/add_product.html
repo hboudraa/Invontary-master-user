@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Ajouter votre produit ici SVP</h1>
+            <p class="lead fw-normal text-white-50 mb-0">Remplire le formulaire</p>
+        </div>
+    </div>
+</header>
+
+<form action="" method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+        {{ form.name.label_tag }}  <!-- Product Name -->
+        {{ form.name }}
+    </div>
+    <div class="mb-3">
+        {{ form.description.label_tag }}  <!-- Description -->
+        {{ form.media }}
+        {{ form.description }}
+    </div>
+    <div class="mb-3">
+        {{ form.expiration_date.label_tag }}  <!-- Description -->
+        {{ form.media }}
+        {{ form.expiration_date }}
+    </div>
+    <div class="mb-3">
+        {{ form.category.label_tag }}  <!-- Category Dropdown -->
+        {{ form.category }}
+    </div>
+    <div class="mb-3">
+        {{ form.quantity.label_tag }}  <!-- Quantity -->
+        {{ form.quantity }}
+    </div>
+    <div class="mb-3">
+        {{ form.price.label_tag }}  <!-- Price -->
+        {{ form.price }}
+    </div>
+    <button type="submit" value="" class="btn btn-primary">Add Product</button>
+</form>
+
+
+{% endblock %}
+

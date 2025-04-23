@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}List Of Products{% endblock %}
+
+{% block content %}
+<h1>Stock Information</h1>
+
+<br>
+<!-- Export Button in Product Page -->
+<form method="GET">
+  <div class="row mb-3">
+    <div class="col-md-4 ">
+      <select name="category" class="form-select border-success" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        {% for category in categories %}
+          <option value="{{ category.id }}"{% if category.id|stringformat:"s" == selected_category %} selected{% endif %}>
+            {{ category.id }} - {{ category.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+  </div>
+</form>
+
+<table class="table table-bordered table-striped text-white bg-dark">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Quantity</th>
+      <th>Date Expiration</th>
+      <th class="d-grid gap-2 d-md-flex justify-content-md-end">Logistique</th>
+    </tr>
+  </thead>
+{% for product in page_obj %}
+  <tbody class="text-white bg-dark">
+    <tr>
+      <td>{{ product.id }}</td>
+      <td>{{ product.name }}</td>
+      {% if product.quantity > 0 %}
+        <td>{{ product.quantity }}</td>
+      {% else %}
+        <td class="text-danger">{{ product.quantity }}</td>
+      {% endif %}
+      <td>
+        {% if product.expiration_date %}
+          {{ product.expiration_date }} <small>⏳ {{ product.remaining_days }} jours restants</small>
+        {% else %}
+          Non défini
+        {% endif %}
+      </td>
+
+      <td class="d-grid gap-2 d-md-flex justify-content-md-end">
+
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{ product.id }}">
+          View
+        </button>
+        {% if user.is_superuser %}
+          <a href="{% url 'product:fiche_stock_entr' pk=product.id %}" class="btn btn-outline-warning btn-sm">
+            FSEntrée
+          </a>
+          <a href="{% url 'product:AddStockEnter' product.id %}" class="btn btn-outline-warning text-success btn-sm">
+            Add
+          </a>
+          |
+          <a href="{% url 'product:fiche_stock_sort' pk=product.id %}" class="btn btn-outline-danger btn-sm">
+            FSSortie
+          </a>
+          {% if product.quantity > 0 %}
+            <a href="{% url 'product:AddStockSortie' product.id %}" class="btn btn-outline-danger btn-sm">
+              Add
+            </a>
+          {% else %}
+            <a href="{% url 'product:AddStockSortie' product.id %}" class="btn btn-outline-danger btn-sm disabled">
+              Add
+            </a>
+          {% endif %}
+        {% endif %}
+
+        <!-- Modal -->
+        <div class="modal fade" id="staticBackdrop{{ product.id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel{{ product.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel{{ product.id }}">Description of: {{ product.name }}</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                {{ product.description|safe }}
+              </div>
+              <div class="modal-footer">
+                <a href="{% url 'product:demander' product.id %}" class="btn btn-success">Commander</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+{% endfor %}
+
+</table>
+
+<nav aria-label="Page navigation example">
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <a class="page-link" href="#">Previous</a>
+      </li>
+    {% endif %}
+
+    <!-- Loop through all the pages -->
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <li class="page-item active">
+          <a class="page-link" href="#">{{ num }}</a>
+        </li>
+      {% else %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <a class="page-link" href="#">Next</a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+<div class="d-grid gap-2 d-md-flex justify-content-md-end">
+  <a href="{% url 'product:export_products_to_excel' %}" class="btn btn-primary">Export to Excel</a>
+  <a href="{% url 'product:add-product' %}" class="btn btn-primary">Ajouter un Produit</a>
+</div>
+{% endblock %}

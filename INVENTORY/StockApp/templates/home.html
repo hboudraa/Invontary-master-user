@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Home | DW-06{% endblock %}
+{% block content %}
+<br><br>
+<h1>Salut {{ user.username | capfirst }} Je vous souhaite une belle journée 😊</h1>
+<br>
+<br>
+<br>
+<div class="container text-center text-light">
+  <div class="row">
+    <div class="col">
+      <div class="card text-center text-light border border-success">
+        <div class="card-header">
+          Stock
+        </div>
+        <div class="card-body border border-success-subtle">
+          <h4 class="card-title">Special Gestion des Stock</h4>
+          <p class="card-text">
+            <a href="{% url 'product:products' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">List Produit</a>
+             | 
+            <a href="#" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Fiche Stock</a>
+             | 
+            {% if request.user.is_superuser %}
+              <a href="{% url 'product:all_demands' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Tout les Commande</a>
+            {% else %}
+              <a href="#" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Tout les Commande</a>
+            {% endif %}
+          </p>
+          <a href="{% url 'product:products' %}" class="btn btn-primary">More Details</a>
+        </div>
+        <div class="card-footer text-body-secondary">
+          2 days ago
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card text-center text-light border border-success">
+        <div class="card-header">
+          Personnel
+        </div>
+        <div class="card-body border border-success-subtle">
+          <h4 class="card-title">Special Personnel Information</h4>
+          <p class="card-text">
+            <a href="{% url 'personal:utilisateur' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Utilisateurs</a>
+            |
+            <a href="{% url 'personal:charger' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Chargé</a>
+            |
+            <a href="{% url 'personal:delegue' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Délégué</a>
+            |
+            <a href="{% url 'personal:requisition' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Réquisitionner</a>
+            |
+            <a href="{% url 'personal:sg' %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">SG</a>
+          </p>
+          <a href="{% url 'personal:charger' %}" class="btn btn-primary">More Details</a>
+        </div>
+        <div class="card-footer text-body-secondary">
+          2 days ago
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card text-center text-light">
+        <div class="card-header">
+          Commercial
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">Special Commercial Treatment</h5>
+          <p class="card-text">Fournisseurs | Clients</p>
+          <a href="#" class="btn btn-primary">More Details</a>
+        </div>
+        <div class="card-footer text-body-secondary">
+          2 days ago
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<br>
+
+{% endblock %}
