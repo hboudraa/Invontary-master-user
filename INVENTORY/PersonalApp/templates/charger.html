@@ -1,6 +1,85 @@
 {% extends 'base.html' %}
 {% block title %}Chargé{% endblock %}
 {% block content %}
+<br>
+<br>
 <h1>List des Chargé</h1>
+<br>
+<br>
+
+<table class="table table-bordered table-striped text-white bg-dark">
+    <thead>
+        <tr>
+            <th>Code Commune</th>
+            <th>Commune</th>
+            <th>Nom</th>
+            <th>Phone</th>
+            <th>NIN</th>
+            <th>Rip</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for charger in page_obj %}
+            <tr>
+                <td>{{ charger.commune.num_commune }}</td>
+                <td>{{ charger.commune.name_commune }}</td>
+                <td>{{ charger.name_french }}</td>
+                    {% if charger.phone_2 %}
+                        <td>{{ charger.phone }}  /  {{ charger.phone_2 }}</td>
+                    {% else %}
+                        <td>{{ charger.phone }}</td>
+                    {% endif %}
+                <td>{{ charger.nin }}</td>
+                <td>{{ charger.rip }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<style>
+    .copy-feedback {
+        background-color: #28a745 !important;
+        color: white !important;
+    }
+
+    .table td {
+        cursor: pointer;
+    }
+
+    .table td:hover {
+        background-color: #495057 !important;
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Add click listener to all table cells
+    document.querySelectorAll("td").forEach(function (cell) {
+        cell.title = "Click to copy";
+
+        cell.addEventListener("click", function () {
+            const text = cell.innerText;
+
+            // Try to copy to clipboard
+            navigator.clipboard.writeText(text).then(function () {
+                // Visual feedback
+                cell.classList.add('copy-feedback');
+
+                // Remove feedback after 300ms
+                setTimeout(() => {
+                    cell.classList.remove('copy-feedback');
+                }, 300);
+
+                console.log('✅ Copied:', text);
+            }).catch(function (err) {
+                console.error('❌ Failed to copy:', err);
+
+                // Fallback: show alert if clipboard API fails
+                alert('Copied: ' + text);
+            });
+        });
+    });
+});
+</script>
 
 {% endblock %}

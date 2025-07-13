@@ -8,6 +8,8 @@ from django.db import models
 class Commune(models.Model):
     num_commune = models.CharField(max_length=4)
     name_commune = models.CharField(max_length=30)
+    def __str__(self):
+        return f"{self.num_commune}" + "    " + f"{self.name_commune}"
 
 
 # المندوبية الولائية
