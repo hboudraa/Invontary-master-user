@@ -9,8 +9,12 @@ class Commune(models.Model):
     num_commune = models.CharField(max_length=4)
     name_commune = models.CharField(max_length=30)
     def __str__(self):
+<<<<<<< HEAD
         return f"{self.num_commune}" + "    " + f"{self.name_commune}"
 
+=======
+        return self.name_commune
+>>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
 
 # المندوبية الولائية
 class Utilisateur(models.Model):
@@ -56,6 +60,11 @@ class Charger(models.Model):
     grade = models.CharField(max_length=100)
     email = models.EmailField(max_length=50, default='gmail@gmail.com')  # EmailField for validation
     observation = models.TextField(max_length=500)
+<<<<<<< HEAD
+=======
+    def __str__(self):
+        return f"{self.name_french} | {self.phone}"
+>>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
 
 
 class Delegue(models.Model):
