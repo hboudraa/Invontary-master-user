@@ -1,6 +1,106 @@
 {% extends 'base.html' %}
 {% block title %}SG{% endblock %}
 {% block content %}
+<br>
+<br>
 <h1>List des SG</h1>
+<br>
+<br>
+<!-- Search and Filter Section -->
+    <div class="glass-card hover-lift p-1 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control bg-transparent border-secondary text-light"
+                           placeholder="Rechercher par nom, tel..."
+                           >
+            </div>
+        </div>
+    </div>
+<table class="table table-bordered text-light" id="sgTable">
+    <thead>
+        <tr>
+            <th>Code Commune</th>
+            <th>Commune</th>
+            <th>Nom</th>
+            <th>phone</th>
+            <th>fax</th>
+            <th>Fix</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for SG in page_obj %}
+            <tr>
+                <td>{{ SG.commune.num_commune }}</td>
+                <td>{{ SG.commune.name_commune }}</td>
+                <td>{{ SG.name_french }}</td>
+                {% if SG.phone_2 %}
+                        <td>{{ SG.phone }}  /  {{ SG.phone_2 }}</td>
+                    {% else %}
+                        <td>{{ SG.phone }}</td>
+                    {% endif %}
+                <td>{{ SG.fax }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<style>
+    .copy-feedback {
+        background-color: #28a745 !important;
+        color: white !important;
+    }
+
+    .table td {
+        cursor: pointer;
+    }
+
+    .table td:hover {
+        background-color: #495057 !important;
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Add click listener to all table cells
+    document.querySelectorAll("td").forEach(function (cell) {
+        cell.title = "Click to copy";
+
+        cell.addEventListener("click", function () {
+            const text = cell.innerText;
+
+            // Try to copy to clipboard
+            navigator.clipboard.writeText(text).then(function () {
+                // Visual feedback
+                cell.classList.add('copy-feedback');
+
+                // Remove feedback after 300ms
+                setTimeout(() => {
+                    cell.classList.remove('copy-feedback');
+                }, 300);
+
+                console.log('✅ Copied:', text);
+            }).catch(function (err) {
+                console.error('❌ Failed to copy:', err);
+
+                // Fallback: show alert if clipboard API fails
+                alert('Copied: ' + text);
+            });
+        });
+    });
+});
+
+// Search functionality
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#sgTable tbody tr');
+
+        rows.forEach(function(row) {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+</script>
 
 {% endblock %}

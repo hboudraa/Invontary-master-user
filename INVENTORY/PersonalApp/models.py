@@ -16,7 +16,11 @@ class Commune(models.Model):
 # المندوبية الولائية
 class Utilisateur(models.Model):
     commune = models.ForeignKey(Commune, on_delete=models.PROTECT)
-    name_french = models.CharField(max_length=50)
+    name_french = models.CharField(max_length=80)
+    name_arabic = models.CharField(max_length=80, default='غير معروف')
+    date_of_birth = models.DateField()
+    nin = models.CharField(max_length=18, null=False, blank=False)
+    rip = models.CharField(max_length=20, default="00799999")
     phone_validator = RegexValidator(
         regex=r'^\d{10}$',
         message=_("Phone number must be 10 digits.")
@@ -28,8 +32,6 @@ class Utilisateur(models.Model):
     phone = models.CharField(max_length=10, validators=[phone_validator], default='0900000000')
     phone_2 = models.CharField(max_length=10, validators=[phone_validator], blank=True, null=True)
     fax = models.CharField(max_length=9, validators=[fax_validator], default='034000000')
-    nin = models.CharField(max_length=18, null=False, blank=False)
-    rip = models.CharField(max_length=20, default="00799999")
     email = models.EmailField(max_length=50, default='gmail@gmail.com')  # EmailField for validation
     recruitment = models.DateTimeField()
     def __str__(self):
@@ -99,7 +101,8 @@ class SG(models.Model):
     )
     phone = models.CharField(max_length=10, validators=[phone_validator], default='0900000000')
     phone_2 = models.CharField(max_length=10, validators=[phone_validator], blank=True, null=True)
-    fax = models.CharField(max_length=9, validators=[fax_validator], default='034000000')
+    fax = models.CharField(max_length=9, validators=[fax_validator], default='034000000', blank=True, null=True)
+    fix = models.CharField(max_length=9, validators=[fax_validator], default='034000000', blank=True, null=True)
     def __str__(self):
         return f"{self.name_french} | {self.phone}"
 
