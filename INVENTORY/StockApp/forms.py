@@ -5,17 +5,13 @@ from .models import *
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-<<<<<<< HEAD
         fields = ['name', 'description', 'category', 'quantity', 'price', 'expiration_date']  # Define the fields you want in the form
-=======
         fields = ['name', 'description', 'category', 'quantity', 'price']  # Define the fields you want in the form
->>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
 
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
         self.fields['name'].widget.attrs['class'] = 'form-control'
         self.fields['name'].widget.attrs['placeholder'] = 'Enter name of product here ...'
-<<<<<<< HEAD
         self.fields['name'].label = 'Enter name of product'
         self.fields['category'].label = 'Enter category of product'
         self.fields['category'].widget.attrs['class'] = 'form-control'
@@ -29,18 +25,7 @@ class ProductForm(forms.ModelForm):
         self.fields['expiration_date'].label = 'Expiration Date'
         self.fields['expiration_date'].widget.attrs['class'] = 'form-control'
         self.fields['expiration_date'].widget.attrs['placeholder'] = 'AAAA-MM-jj'
-=======
-        self.fields['name'].label = 'Enter name of product: '
-        self.fields['category'].label = 'Enter category of product: '
-        self.fields['category'].widget.attrs['class'] = 'form-control'
-        self.fields['category'].widget.attrs['placeholder'] = 'Enter category of product here ...'
-        self.fields['quantity'].label = 'Enter quantity of product: '
-        self.fields['quantity'].widget.attrs['class'] = 'form-control'
-        self.fields['quantity'].widget.attrs['placeholder'] = 'Enter quantity of product here ...'
-        self.fields['price'].label = 'Enter Price: '
-        self.fields['price'].widget.attrs['class'] = 'form-control'
-        self.fields['price'].widget.attrs['placeholder'] = 'Enter price of product here ...'
->>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
+
 
 class EnterForm(forms.ModelForm):
     class Meta:
@@ -52,12 +37,9 @@ class EnterForm(forms.ModelForm):
         if product:
             self.instance.name_fiche = product  # تعيين اسم المنتج تلقائيًا
         self.fields['number'].widget.attrs['class'] = 'form-control'
-<<<<<<< HEAD
         self.fields['number'].widget.attrs['placeholder'] = 'Enter Reference of fiche here ...'
         self.fields['number'].label = "Réf"
-=======
         self.fields['number'].widget.attrs['placeholder'] = 'Enter number of fiche here ...'
->>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
         self.fields['source'].widget.attrs['class'] = 'form-control'
         self.fields['source'].widget.attrs['placeholder'] = 'Enter name of source here ...'
         self.fields['quantity'].widget.attrs['class'] = 'form-control'

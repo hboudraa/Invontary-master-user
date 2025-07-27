@@ -5,11 +5,8 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-<<<<<<< HEAD
 from datetime import date
 from django.utils.timesince import timesince
-=======
->>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
 
 
 # Create your models here.
@@ -34,16 +31,12 @@ class Product(models.Model):
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=1)
-<<<<<<< HEAD
     expiration_date = models.DateField(null=True, blank=True)
-=======
->>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
 
     @property
     def total(self):
         return self.price * self.quantity
 
-<<<<<<< HEAD
     @property
     def remaining_days(self):
         if self.expiration_date:
@@ -57,8 +50,6 @@ class Product(models.Model):
             return timesince(date.today(), self.expiration_date)
         return "Expiré"
 
-=======
->>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
 
 class FicheStockEntr(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)

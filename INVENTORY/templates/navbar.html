@@ -7,7 +7,7 @@
     <div class="collapse navbar-collapse" id="navbarScroll">
       <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{% url 'product:home' %}">Home</a>
+          <a class="nav-link active" aria-current="page" href="{% url 'product:home' %}">Dashboard</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'product:products' %}">Stock</a>
@@ -54,7 +54,7 @@
             const year = now.getFullYear();
 
             // Format date as DD/MM/YYYY
-<!--            const formattedDate = `${day}/${month}/${year}`;-->
+            const formattedDate = `${day}/${month}/${year}`;
             document.getElementById('clock').textContent = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
         }
 

@@ -1,14 +1,24 @@
 {% extends 'base.html' %}
 {% block title %}Chargé{% endblock %}
 {% block content %}
-<<<<<<< HEAD
 <br>
 <br>
 <h1>List des Chargé</h1>
 <br>
 <br>
 
-<table class="table table-bordered table-striped text-white bg-dark">
+<!-- Search and Filter Section -->
+    <div class="glass-card hover-lift p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                    <input type="text" id="searchInput" class="form-control bg-transparent border-secondary text-light"
+                           placeholder="Rechercher par nom, commune, téléphone..."
+                           style="border-left: none;">
+            </div>
+        </div>
+    </div>
+
+<table class="table table-bordered text-light" id="chargeTable">
     <thead>
         <tr>
             <th>Code Commune</th>
@@ -81,11 +91,19 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+// Search functionality
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#chargeTable tbody tr');
+
+        rows.forEach(function(row) {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
 </script>
 
 {% endblock %}
-=======
-<h1>List des Chargé</h1>
-
-{% endblock %}
->>>>>>> f05775cd3bb9ba89bdaf8b01270083efc7d1f628
