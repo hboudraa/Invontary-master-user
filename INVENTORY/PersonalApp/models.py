@@ -11,7 +11,6 @@ class Commune(models.Model):
     def __str__(self):
         return f"{self.num_commune}" + "    " + f"{self.name_commune}"
 
-        return self.name_commune
 
 # المندوبية الولائية
 class Utilisateur(models.Model):

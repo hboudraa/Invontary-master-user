@@ -9,7 +9,7 @@
 <!-- Export Button in Product Page -->
 <form method="GET">
   <div class="row mb-3">
-    <div class="col-md-4 ">
+    <div class="col-md-6 ">
       <select name="category" class="form-select border-success" onchange="this.form.submit()">
         <option value="">All Categories</option>
         {% for category in categories %}
@@ -19,21 +19,14 @@
         {% endfor %}
       </select>
     </div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary">Filter</button>
+    <div class="col-md-6">
+    <input type="text" id="searchInput" class="form-control bg-transparent border-secondary text-light"
+                           placeholder="Rechercher par nom, commune, téléphone...">
     </div>
-    <!-- Search and Filter Section -->
-    <div class="glass-card hover-lift p-4 mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                    <input type="text" id="searchInput" class="form-control bg-transparent border-secondary text-light"
-                           placeholder="Rechercher par nom, commune, téléphone..."
-                           style="border-left: none;">
-            </div>
-        </div>
-    </div>
+
   </div>
 </form>
+<br>
 
 <table class="table table-bordered text-light" id="productsTable">
   <thead>
