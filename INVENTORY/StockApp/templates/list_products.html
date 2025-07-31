@@ -23,12 +23,11 @@
     <input type="text" id="searchInput" class="form-control bg-transparent border-secondary text-light"
                            placeholder="Rechercher par nom, commune, téléphone...">
     </div>
-
   </div>
 </form>
 <br>
 
-<table class="table table-bordered text-light" id="productsTable">
+<table class="table table-bordered" id="productsTable">
   <thead>
     <tr>
       <th>ID</th>
@@ -61,8 +60,8 @@
       <td class="d-grid gap-2 d-md-flex justify-content-md-end">
 
         <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{ product.id }}">
-          View
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{ product.id }}">
+          Commander
         </button>
         {% if user.is_superuser %}
           <a href="{% url 'product:fiche_stock_entr' pk=product.id %}" class="btn btn-outline-warning btn-sm">

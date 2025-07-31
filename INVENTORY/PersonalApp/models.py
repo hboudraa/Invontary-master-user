@@ -130,3 +130,4 @@ class Requisition(models.Model):
     observation = models.TextField(max_length=500)
     def __str__(self):
         return f"{self.name_french} | {self.phone}"
+
