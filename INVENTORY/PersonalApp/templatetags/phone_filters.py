@@ -27,7 +27,7 @@ def format_phone(phone_number):
     # Handle different phone number formats
     if len(phone_str) == 10 and phone_str.startswith('0'):
         # Format: 0541904705 -> 05-41-90-47-05
-        return f"{phone_str[:2]}-{phone_str[2:4]}-{phone_str[4:6]}-{phone_str[6:8]}-{phone_str[8:]}"
+        return f"{phone_str[:2]}{phone_str[2:4]} {phone_str[4:6]} {phone_str[6:8]} {phone_str[8:]}"
     elif len(phone_str) == 11 and phone_str.startswith('05'):
         # Handle case where 0 might be missing: 541904705 -> 05-41-90-47-05
         return f"0{phone_str[0]}-{phone_str[1:3]}-{phone_str[3:5]}-{phone_str[5:7]}-{phone_str[7:]}"
