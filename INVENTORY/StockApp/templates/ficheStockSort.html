@@ -13,6 +13,7 @@
       <th scope="col">Destination</th>
       <th scope="col" class="text-danger">Quantity</th>
       <th scope="col">Note</th>
+      <th scope="col">Actions</th>
     </tr>
   </thead>
   {% for fiche_sortie in page_obj %}
@@ -25,6 +26,13 @@
               <td>{{ fiche_sortie.destination }}</td>
               <td class="text-light">{{ fiche_sortie.quantity }}</td>
               <td>{{ fiche_sortie.observation | truncatewords:3 | safe }}</td>
+              <td><a href="{% url 'product:bon_livraison_arabic' fiche_sortie.id %}" class="btn btn-success">
+    📄 PDF عربي</a><a href="{% url 'product:bon_livraison_arabic' fiche_sortie.id %}" class="btn btn-success">
+    📄 PDF عربي</a>
+              <!-- PDF Download Links -->
+
+
+              </td>
             </tr>
         </tbody>
     {% endif %}

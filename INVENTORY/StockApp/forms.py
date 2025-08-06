@@ -6,7 +6,6 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['name', 'description', 'category', 'quantity', 'price', 'expiration_date']  # Define the fields you want in the form
-        fields = ['name', 'description', 'category', 'quantity', 'price']  # Define the fields you want in the form
 
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)

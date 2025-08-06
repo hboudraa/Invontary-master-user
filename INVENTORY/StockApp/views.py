@@ -1,3 +1,5 @@
+import os
+from django.conf import settings
 import openpyxl
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -8,8 +10,20 @@ from django.contrib import messages
 from .forms import ProductForm, EnterForm, DemandClassForm, SortieForm
 from .models import *
 from django.contrib.admin.views.decorators import staff_member_required
+from django.db import transaction
+from django.urls import reverse
 
-
+import arabic_reshaper
+from bidi.algorithm import get_display
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.units import inch
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from io import BytesIO
 from django.utils import timezone
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
@@ -105,6 +119,51 @@ def add_sortie(request, id):
         return render(request, 'add-stock-sortie.html', {'form_sortie':form_sortie})
     messages.error(request, "❌ You must be logged in to add a product.")
     return redirect('accounts:login')  # توجيه المستخدم إلى صفحة تسجيل الدخول
+
+
+
+@login_required
+def batch_sortie(request):
+    products = Product.objects.all().order_by('id')
+
+    if request.method == "POST":
+        destination = request.POST.get("destination", "").strip()
+        number_prefix = request.POST.get("number_prefix", "")
+        created_ids = []  # لتخزين IDs سجلات FicheStockSortie
+
+        with transaction.atomic():
+            for product in products:
+                qty_raw = request.POST.get(f"qty_{product.id}", "").strip()
+                if not qty_raw:
+                    continue
+                try:
+                    qty = int(qty_raw)
+                except ValueError:
+                    continue
+
+                if qty <= 0 or qty > product.quantity:
+                    continue
+
+                fiche = FicheStockSortie.objects.create(
+                    user=request.user,
+                    name_fiche=product,
+                    number=f"{number_prefix}-{product.id}",
+                    destination=destination or "غير محدد",
+                    quantity=qty,
+                    observation=request.POST.get(f"obs_{product.id}", "").strip()
+                )
+                created_ids.append(fiche.id)
+
+        if created_ids:
+            # نخزن IDs في الـ session
+            request.session['last_batch_ids'] = created_ids
+            return redirect(reverse('product:batch_pdf'))
+        else:
+            messages.info(request, "لم يتم إخراج أي منتج.")
+            return redirect('product:batch_sortie')
+
+    return render(request, 'batch_sortie.html', {'products': products})
+
 
 def fiche_stock_sortie(request, pk):
     item = get_object_or_404(Product, pk=pk)
@@ -587,3 +646,264 @@ def clean_html(text):
         return ""
     clean = re.compile('<.*?>')
     return re.sub(clean, '', text).strip()
+
+# ضع هنا مسار الخطوط في مشروعك
+
+ARABIC_FONT_PATH = os.path.join(settings.BASE_DIR, "static", "fonts", "NotoSansArabic-Regular.ttf")
+ARABIC_BOLD_FONT_PATH = os.path.join(settings.BASE_DIR, "static", "fonts", "NotoSansArabic-Bold.ttf")
+
+
+def process_arabic_text(text):
+    if not text:
+        return ""
+    reshaped = arabic_reshaper.reshape(str(text))
+    return get_display(reshaped)
+
+def register_arabic_fonts():
+    """
+    Register Arabic fonts for ReportLab. Adjust paths above.
+    Returns True if success, False otherwise.
+    """
+    try:
+        pdfmetrics.registerFont(TTFont('Arabic', ARABIC_FONT_PATH))
+        pdfmetrics.registerFont(TTFont('Arabic-Bold', ARABIC_BOLD_FONT_PATH))
+        return True
+    except Exception as e:
+        # طباعة لغايات الديباغ فقط
+        print("Arabic font registration failed:", e)
+        return False
+
+
+@login_required
+def batch_pdf_arabic(request):
+    """
+    Generate a single Arabic PDF summarizing a batch of FicheStockSortie records.
+    Expects list of fiche IDs in session under 'last_batch_ids' (as set by batch_sortie view).
+    """
+    from .models import FicheStockSortie  # local import to avoid circular issues
+
+    fiche_ids = request.session.get('last_batch_ids', [])
+    if not fiche_ids:
+        return HttpResponse(process_arabic_text("لا يوجد بيانات لاستخراجها."), status=400)
+
+    fiches = FicheStockSortie.objects.filter(id__in=fiche_ids).order_by('date')
+
+    has_arabic = register_arabic_fonts()
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # Arabic styles (use registered font names if available)
+    if has_arabic:
+        title_style = ParagraphStyle('title', parent=styles['Heading1'], fontName='Arabic-Bold', fontSize=16, alignment=1)
+        normal_r = ParagraphStyle('normal_r', parent=styles['Normal'], fontName='Arabic', fontSize=11, alignment=2)  # right-aligned
+        header_r = ParagraphStyle('header_r', parent=styles['Normal'], fontName='Arabic-Bold', fontSize=12, alignment=2)
+    else:
+        title_style = ParagraphStyle('title', parent=styles['Heading1'], fontSize=16, alignment=1)
+        normal_r = ParagraphStyle('normal_r', parent=styles['Normal'], fontSize=11, alignment=2)
+        header_r = ParagraphStyle('header_r', parent=styles['Normal'], fontSize=12, alignment=2)
+
+    # Document header (Arabic organization lines)
+    elements.append(Paragraph(process_arabic_text("السّلطة الوطنية المستقلة للانتخابات"), title_style))
+    elements.append(Paragraph(process_arabic_text("المندوبية الولائية لولاية بجاية"), title_style))
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(process_arabic_text("تقرير دفعة سندات إخراج المخزون"), header_r))
+    elements.append(Spacer(1, 12))
+
+    # Build table header (Arabic labels, keep content cells processed for RTL)
+    table_data = [
+        [
+            process_arabic_text('التاريخ'),
+            process_arabic_text('الوجهة'),
+            process_arabic_text('الكمية'),
+            process_arabic_text('اسم المنتج'),
+            process_arabic_text('الرقم')
+        ]
+    ]
+
+    # Fill rows: we'll prepare Arabic-processed strings for each cell where appropriate
+    for f in fiches:
+        date_str = f.date.strftime('%Y/%m/%d %H:%M')
+        # process Arabic text for product name and destination (if present)
+        prod_name = process_arabic_text(f.name_fiche.name)
+        dest = process_arabic_text(f.destination or "غير محدد")
+        num = process_arabic_text(f.number)
+        qty = str(f.quantity)
+        # For RTL table appearance, keep order of cells as in header but we will set alignment to RIGHT
+        table_data.append([date_str, dest, qty, prod_name, num])
+
+    # Build table with column widths (adjust as needed)
+    col_widths = [100, 140, 60, 150, 100]  # in points (approx)
+    table = Table(table_data, colWidths=col_widths, hAlign='RIGHT')
+
+    # Table style: header background, right alignment, fonts use Arabic if available
+    tbl_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0b5ed7')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Arabic-Bold' if has_arabic else 'Helvetica-Bold'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Arabic' if has_arabic else 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.whitesmoke, colors.beige]),
+    ])
+    table.setStyle(tbl_style)
+    elements.append(table)
+    elements.append(Spacer(1, 12))
+
+    # Optionally, include per-fiche detailed block (observations) below
+    for f in fiches:
+        if f.observation:
+            clean_obs = re.sub('<.*?>', '', f.observation)
+            elements.append(Paragraph(process_arabic_text(f"ملاحظات حول السند {f.number}:"), header_r))
+            elements.append(Paragraph(process_arabic_text(clean_obs), normal_r))
+            elements.append(Spacer(1, 8))
+
+    # Footer / signature area
+    footer_table = Table([
+        [process_arabic_text('توقيع المسؤول:'), ''],
+        [process_arabic_text('التاريخ والتوقيع:'), '']
+    ], colWidths=[200, 200], hAlign='RIGHT')
+    footer_table.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
+        ('FONTNAME', (0,0), (-1,-1), 'Arabic' if has_arabic else 'Helvetica'),
+        ('FONTSIZE', (0,0), (-1,-1), 11),
+        ('LINEBELOW', (1,0), (1,0), 0.5, colors.black),
+        ('LINEBELOW', (1,1), (1,1), 0.5, colors.black),
+    ]))
+    elements.append(Spacer(1, 20))
+    elements.append(footer_table)
+
+    # Build and return PDF
+    doc.build(elements)
+    pdf_value = buffer.getvalue()
+    buffer.close()
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="batch_bon_livraison.pdf"'
+    response.write(pdf_value)
+    return response
+
+
+def bon_livraison_arabic(request, fiche_id=None):
+    """
+    Generate Arabic PDF for a FicheStockSortie (or similar model).
+    Requires: FicheStockSortie model imported where appropriate.
+    """
+    # استبدل الاستدعاء التالي بما يناسب مشروعك
+    from .models import FicheStockSortie  # ضع import هنا لتجنب circular imports
+
+    if fiche_id:
+        fiche = get_object_or_404(FicheStockSortie, id=fiche_id)
+    else:
+        try:
+            fiche = FicheStockSortie.objects.latest('date')
+        except FicheStockSortie.DoesNotExist:
+            return HttpResponse("لم يتم العثور على سند تسليم", status=404)
+
+    has_arabic = register_arabic_fonts()
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # إنشاء أنماط عربية
+    if has_arabic:
+        arabic_style = ParagraphStyle('Arabic', parent=styles['Normal'], fontName='Arabic', fontSize=12, alignment=2)
+        arabic_bold = ParagraphStyle('ArabicBold', parent=styles['Heading2'], fontName='Arabic-Bold', fontSize=14, alignment=1)
+    else:
+        arabic_style = ParagraphStyle('Arabic', parent=styles['Normal'], fontSize=12, alignment=2)
+        arabic_bold = ParagraphStyle('ArabicBold', parent=styles['Heading2'], fontSize=14, alignment=1)
+
+    # Header / Title
+    elements.append(Paragraph(process_arabic_text("السّلطة الوطنية المستقلة للانتخابات"), arabic_bold))
+    elements.append(Paragraph(process_arabic_text("المندوبية الولائية لولاية بجاية"), arabic_bold))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(process_arabic_text(f"سند تسليم رقم {fiche.number}"), arabic_bold))
+    elements.append(Spacer(1, 16))
+
+    # Date / meta table (Right label, Left value)
+    date_info = [
+        [fiche.date.strftime('%Y/%m/%d - %H:%M'), process_arabic_text('تاريخ الإنشاء:')],
+        [fiche.user.username if fiche.user else 'غير محدد', process_arabic_text('المستخدم:')],
+        [process_arabic_text(fiche.destination or ''), process_arabic_text('الوجهة:')],
+    ]
+    date_table = Table(date_info, colWidths=[2.2 * inch, 3.8 * inch])
+    date_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Arabic-Bold' if has_arabic else 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Arabic' if has_arabic else 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey)
+    ]))
+    elements.append(date_table)
+    elements.append(Spacer(1, 16))
+
+    # Products table header + data
+    product_details = [
+        [
+            process_arabic_text('اسم المنتج'),
+            process_arabic_text('الكمية المخرجة'),
+            process_arabic_text('المخزون المتبقي'),
+            process_arabic_text('السعر')
+        ],
+        [
+            process_arabic_text(fiche.name_fiche.name),
+            str(fiche.quantity),
+            str(fiche.name_fiche.quantity),
+            f"{getattr(fiche.name_fiche, 'price', 'غير محدد')}"
+        ]
+    ]
+    product_table = Table(product_details, colWidths=[2.5*inch, 1*inch, 1*inch, 1.2*inch])
+    product_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0b5ed7')),  # header color
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Arabic-Bold' if has_arabic else 'Helvetica-Bold'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Arabic' if has_arabic else 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.whitesmoke, colors.beige]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black)
+    ]))
+    elements.append(product_table)
+    elements.append(Spacer(1, 12))
+
+    # Observations
+    if fiche.observation:
+        import re
+        clean_obs = re.sub('<.*?>', '', fiche.observation)
+        elements.append(Paragraph(process_arabic_text("ملاحظات"), arabic_bold))
+        elements.append(Spacer(1, 6))
+        elements.append(Paragraph(process_arabic_text(clean_obs), arabic_style))
+        elements.append(Spacer(1, 12))
+
+    # Footer (signature)
+    footer_data = [
+        [process_arabic_text('توقيع المسؤول:'), ''],
+        [process_arabic_text('التاريخ والتوقيع:'), '']
+    ]
+    footer_table = Table(footer_data, colWidths=[2.2*inch, 3.8*inch])
+    footer_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Arabic' if has_arabic else 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('LINEBELOW', (1, 0), (1, 0), 0.5, colors.black),
+        ('LINEBELOW', (1, 1), (1, 1), 0.5, colors.black),
+    ]))
+    elements.append(Spacer(1, 20))
+    elements.append(footer_table)
+
+    # Build document
+    doc.build(elements)
+    pdf = buffer.getvalue()
+    buffer.close()
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="bon_livraison_{fiche.number}.pdf"'
+    response.write(pdf)
+    return response
