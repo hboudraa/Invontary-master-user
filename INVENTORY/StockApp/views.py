@@ -24,6 +24,8 @@ from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
+from django.db.models import Q
+
 from django.utils import timezone
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
@@ -38,28 +40,44 @@ def home(request):
 
 def products(request):
     categories = Category.objects.all()
-    selected_category = request.GET.get('category')
-    if selected_category:
-        product_list = Product.objects.filter(category_id=selected_category)
-    else:
-        product_list = Product.objects.all().order_by('id')
+    selected_category = request.GET.get('category', '')
     search_query = request.GET.get('search_query', '')
+
+    # جلب جميع المنتجات
+    product_list = Product.objects.all().order_by('id')
+
+    # فلترة حسب الفئة إذا تم اختيارها
+    if selected_category:
+        product_list = product_list.filter(category_id=selected_category)
+
+    # فلترة حسب البحث إذا تم إدخاله
     if search_query:
-        product_list = product_list.filter(name__icontains=search_query)
+        product_list = product_list.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+
+    # تقسيم الصفحات
     paginator = Paginator(product_list, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    # Handle AJAX request for live search
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        html = render_to_string('product_list.html', {'page_obj': page_obj})
-        return JsonResponse({'html': html})
-    return render(request, 'list_products.html',
-                  {
-                      'categories': categories,
-                      "page_obj": page_obj,
-                      'selected_category': selected_category
-                  })
 
+    # في حالة طلب Ajax
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('product_list.html', {
+            'page_obj': page_obj,
+            'categories': categories,
+            'selected_category': selected_category,
+            'search_query': search_query
+        })
+        return JsonResponse({'html': html})
+
+    return render(request, 'list_products.html', {
+        'categories': categories,
+        'page_obj': page_obj,
+        'selected_category': selected_category,
+        'search_query': search_query
+    })
 def add_enter(request, id):
     enter = Product.objects.get(pk=id)  # ✅ جلب كائن المنتج الصحيح
     if request.user.is_authenticated:

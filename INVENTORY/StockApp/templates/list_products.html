@@ -3,29 +3,26 @@
 {% block title %}List Of Products{% endblock %}
 
 {% block content %}
-<h1>Stock Information</h1>
-
-<br>
+<h1 class="p-4">Stock Information</h1>
 <!-- Export Button in Product Page -->
 <form method="GET">
   <div class="row mb-3">
-    <div class="col-md-6 ">
+    <div class="col-md-6">
       <select name="category" class="form-select border-success" onchange="this.form.submit()">
         <option value="">All Categories</option>
         {% for category in categories %}
-          <option value="{{ category.id }}"{% if category.id|stringformat:"s" == selected_category %} selected{% endif %}>
+          <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
             {{ category.id }} - {{ category.name }}
           </option>
         {% endfor %}
       </select>
     </div>
     <div class="col-md-6">
-    <input type="text" id="searchInput" class="form-control bg-transparent border-secondary text-light"
-                           placeholder="Rechercher par nom, commune, téléphone...">
+      <input type="text" name="search_query" class="form-control bg-transparent border-secondary text-light"
+             placeholder="Rechercher..." value="{{ search_query }}">
     </div>
   </div>
 </form>
-<br>
 
 <table class="table table-bordered" id="productsTable">
   <thead>
@@ -153,17 +150,4 @@
   <a href="{% url 'product:batch_sortie' %}" class="btn btn-warning">Sortie plusieurs produits</a>
 
 </div>
-<script>
-  // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    searchInput.addEventListener('input', function() {
-        const filter = this.value.toLowerCase();
-        const rows = document.querySelectorAll('#productsTable tbody tr');
-
-        rows.forEach(function(row) {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
-        });
-    });
-</script>
 {% endblock %}
