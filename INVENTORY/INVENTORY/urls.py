@@ -22,5 +22,6 @@ urlpatterns = [
     path('', include('StockApp.urls')),
     path('accounts/', include('AccountsApp.urls')),
     path('personal/', include('PersonalApp.urls')),
+    path('commercial/', include('Commercial.urls')),
     path('tinymce/', include('tinymce.urls')),
 ]
