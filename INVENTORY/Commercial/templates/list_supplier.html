@@ -1,1 +1,112 @@
-<h1>Liste des fournisseur</h1>
+{% extends 'base.html' %}
+{% load phone_filters %}
+{% block title %}Chargé{% endblock %}
+{% block content %}
+<h1>List des Fournisseur</h1>
+
+<!-- Search and Filter Section -->
+    <div class="glass-card hover-lift p-1 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control bg-transparent border-secondary text-light"
+                           placeholder="Rechercher par code commune, nom, commune..."
+                           >
+            </div>
+        </div>
+    </div>
+
+<table class="table table-bordered text-light" id="supplierTable">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>rib/rip</th>
+            <th>Agence</th>
+            <th>n°rc</th>
+            <th>N°Agrément</th>
+            <th>nif</th>
+            <th>nis</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for supplier in list_supplier %}
+            <tr>
+                <td>{{ supplier.full_name }}</td>
+                    {% if supplier.phone_2 %}
+                        <td>{{ supplier.phone }}  /  {{ supplier.phone_2 }}</td>
+                    {% else %}
+                        <td>{{ supplier.phone }}</td>
+                    {% endif %}
+                <td>{{ supplier.email }}</td>
+                <td>{{ supplier.rip }}</td>
+                <td>{{ supplier.agence }}</td>
+                <td>{{ supplier.num_rc }}</td>
+                <td>{{ supplier.num_agrement }}</td>
+                <td>{{ supplier.nif }}</td>
+                <td>{{ supplier.nis }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'commercial:add_supplier' %}" class="btn btn-primary">Ajouter un Fournisseur</a>
+<style>
+    .copy-feedback {
+        background-color: #28a745 !important;
+        color: white !important;
+    }
+
+    .table td {
+        cursor: pointer;
+    }
+
+    .table td:hover {
+        background-color: #495057 !important;
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Add click listener to all table cells
+    document.querySelectorAll("td").forEach(function (cell) {
+        cell.title = "Click to copy";
+
+        cell.addEventListener("click", function () {
+            const text = cell.innerText;
+
+            // Try to copy to clipboard
+            navigator.clipboard.writeText(text).then(function () {
+                // Visual feedback
+                cell.classList.add('copy-feedback');
+
+                // Remove feedback after 300ms
+                setTimeout(() => {
+                    cell.classList.remove('copy-feedback');
+                }, 300);
+
+                console.log('✅ Copied:', text);
+            }).catch(function (err) {
+                console.error('❌ Failed to copy:', err);
+
+                // Fallback: show alert if clipboard API fails
+                alert('Copied: ' + text);
+            });
+        });
+    });
+});
+
+// Search functionality
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#supplierTable tbody tr');
+
+        rows.forEach(function(row) {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+</script>
+
+{% endblock %}

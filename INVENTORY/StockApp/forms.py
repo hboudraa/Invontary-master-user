@@ -31,20 +31,38 @@ class EnterForm(forms.ModelForm):
         model = FicheStockEntr
         fields = ['number', 'source', 'quantity', 'price', 'observation']
 
-    def __init__(self, *args, product=None,**kwargs):
-        super(EnterForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, product=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # لو تم تمرير product، اربط مباشرة مع FicheStockEntr
         if product:
-            self.instance.name_fiche = product  # تعيين اسم المنتج تلقائيًا
-        self.fields['number'].widget.attrs['class'] = 'form-control'
-        self.fields['number'].widget.attrs['placeholder'] = 'Enter Reference of fiche here ...'
-        self.fields['number'].label = "Réf"
-        self.fields['number'].widget.attrs['placeholder'] = 'Enter number of fiche here ...'
-        self.fields['source'].widget.attrs['class'] = 'form-control'
-        self.fields['source'].widget.attrs['placeholder'] = 'Enter name of source here ...'
-        self.fields['quantity'].widget.attrs['class'] = 'form-control'
-        self.fields['quantity'].widget.attrs['placeholder'] = 'Enter name of quantity here ...'
-        self.fields['price'].widget.attrs['class'] = 'form-control'
-        self.fields['price'].widget.attrs['placeholder'] = 'Enter name of price here ...'
+            self.instance.name_fiche = product
+
+        # تنسيق الحقول
+        self.fields['number'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter Reference of fiche here ...'
+        })
+
+        self.fields['source'].widget.attrs.update({
+            'class': 'form-control'
+        })
+
+        self.fields['quantity'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter quantity here ...'
+        })
+
+        self.fields['price'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter price here ...'
+        })
+
+        self.fields['observation'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Any notes ...'
+        })
+
 
 class SortieForm(forms.ModelForm):
     class Meta:

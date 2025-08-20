@@ -56,7 +56,7 @@ class FicheStockEntr(models.Model):
     name_fiche = models.ForeignKey(Product, on_delete=models.CASCADE)  # 🔹 إضافة علاقة بالمنتج
     date = models.DateTimeField(auto_now_add=True)
     number = models.CharField(max_length=10)
-    source = models.CharField(max_length=20)
+    source = models.ForeignKey("Commercial.Supplier", on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=1)
     observation = tinymce_models.HTMLField(blank=True, null=True)

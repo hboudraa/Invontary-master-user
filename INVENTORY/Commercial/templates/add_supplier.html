@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load phone_filters %}
+{% block title %}Add Supplier{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4 text-primary">Ajouter un fournisseur</h2>
+    <form method="POST" class="shadow p-4 rounded bg-dark">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.full_name.label_tag }}
+                {{ form.full_name }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.raison_social.label_tag }}
+                {{ form.raison_social }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.agisant.label_tag }}
+                {{ form.agisant }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.address.label_tag }}
+                {{ form.address }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.phone.label_tag }}
+                {{ form.phone }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.phone_2.label_tag }}
+                {{ form.phone_2 }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.email.label_tag }}
+                {{ form.email }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.fax.label_tag }}
+                {{ form.fax }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.nin.label_tag }}
+                {{ form.nin }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.rip.label_tag }}
+                {{ form.rip }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.agence.label_tag }}
+                {{ form.agence }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.num_rc.label_tag }}
+                {{ form.num_rc }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.num_agriment.label_tag }}
+                {{ form.num_agriment }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form.nif.label_tag }}
+                {{ form.nif }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form.nis.label_tag }}
+                {{ form.nis }}
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'commercial:supplier' %}" class="btn btn-secondary">↩ Router</a>
+            <button type="submit" class="btn btn-success">💾 Save</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
